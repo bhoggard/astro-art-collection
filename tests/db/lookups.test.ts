@@ -6,7 +6,7 @@ import { collections, groups, tags } from '../../src/db/schema';
 
 describe('lookup tables', () => {
   it('inserts and reads back a tag, a group, and a collection', async () => {
-    const suffix = Date.now();
+    const suffix = `${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
     const tagName = `test-tag-${suffix}`;
     const groupName = `test-group-${suffix}`;
     const collectionName = `test-collection-${suffix}`;
@@ -30,7 +30,7 @@ describe('lookup tables', () => {
   });
 
   it('rejects a duplicate tag name', async () => {
-    const tagName = `dup-tag-${Date.now()}`;
+    const tagName = `dup-tag-${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
 
     try {
       await testDb.insert(tags).values({ name: tagName });

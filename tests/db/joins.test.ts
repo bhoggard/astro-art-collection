@@ -17,7 +17,7 @@ import {
 
 describe('cross-cutting join tables', () => {
   it('links an artwork to a collection and a tag, and a contact to a tag and a group', async () => {
-    const suffix = Date.now();
+    const suffix = `${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
     const sourceContactId = Math.floor(Math.random() * 1_000_000_000);
     const sourcePieceId = Math.floor(Math.random() * 1_000_000_000);
     const tagName = `test-tag-${suffix}`;
