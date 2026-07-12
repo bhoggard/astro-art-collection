@@ -701,7 +701,7 @@ git commit -m "feat: add artworks table"
 ```typescript
 // tests/db/artwork-relations.test.ts
 import { describe, expect, it } from 'vitest';
-import { eq } from 'drizzle-orm';
+import { eq, type InferSelectModel } from 'drizzle-orm';
 import { testDb } from '../helpers/test-db';
 import { artworkArtists, artworkFiles, artworkImages, artworks, contacts } from '../../src/db/schema';
 
@@ -709,6 +709,10 @@ describe('artwork relation tables', () => {
   it('links an artwork to an artist, an image, and a file', async () => {
     const sourceContactId = Math.floor(Math.random() * 1_000_000_000);
     const sourcePieceId = Math.floor(Math.random() * 1_000_000_000);
+    // Declared outside the try block because the finally block below needs to
+    // reference it for cleanup; a `const` declared inside `try` is out of
+    // scope in `finally` in JavaScript.
+    let artwork: InferSelectModel<typeof artworks> | undefined;
 
     try {
       const [artist] = await testDb
@@ -716,7 +720,7 @@ describe('artwork relation tables', () => {
         .values({ sourceContactId, firstName: 'Ada', lastName: 'Lovelace', isArtist: true })
         .returning();
 
-      const [artwork] = await testDb
+      [artwork] = await testDb
         .insert(artworks)
         .values({ sourcePieceId, title: 'Collaborative Piece' })
         .returning();
@@ -797,7 +801,7 @@ describe('artwork relation tables', () => {
 });
 ```
 
-Note: the cleanup in the `finally` block of the first test uses `artwork!.id` because `artwork` is declared with `const` inside the `try`; TypeScript needs the non-null assertion since it can't see that the `finally` block only runs after assignment succeeds. This mirrors the pattern used in earlier task tests, just with more rows to clean up.
+Note: `artwork` is declared with `let` above the `try` block (not `const` inside it), because a `const` declared inside `try` is out of scope in the sibling `finally` block in JavaScript — referencing it there would throw `ReferenceError`, not just fail a TypeScript nullability check. The second test below doesn't need this treatment since its `finally` block only references `sourcePieceId`/`sourceContactId`, which are already declared before the `try`.
 
 - [ ] **Step 2: Run the test to verify it fails**
 
@@ -922,7 +926,7 @@ git commit -m "feat: add artwork_artists, artwork_images, and artwork_files tabl
 ```typescript
 // tests/db/joins.test.ts
 import { describe, expect, it } from 'vitest';
-import { eq } from 'drizzle-orm';
+import { eq, type InferSelectModel } from 'drizzle-orm';
 import { testDb } from '../helpers/test-db';
 import {
   artworkArtists,
@@ -945,14 +949,19 @@ describe('cross-cutting join tables', () => {
     const tagName = `test-tag-${suffix}`;
     const groupName = `test-group-${suffix}`;
     const collectionName = `test-collection-${suffix}`;
+    // Declared outside the try block because the finally block below needs to
+    // reference them for cleanup; a `const` declared inside `try` is out of
+    // scope in `finally` in JavaScript.
+    let artist: InferSelectModel<typeof contacts> | undefined;
+    let artwork: InferSelectModel<typeof artworks> | undefined;
 
     try {
-      const [artist] = await testDb
+      [artist] = await testDb
         .insert(contacts)
         .values({ sourceContactId, firstName: 'Ada', lastName: 'Lovelace', isArtist: true })
         .returning();
 
-      const [artwork] = await testDb
+      [artwork] = await testDb
         .insert(artworks)
         .values({ sourcePieceId, title: 'Fully Linked Piece' })
         .returning();
@@ -1014,7 +1023,7 @@ describe('cross-cutting join tables', () => {
 });
 ```
 
-Note: as in Task 5, `artwork!.id` / `artist!.id` in the `finally` block use the non-null assertion because TypeScript can't infer that `finally` only runs after those `const`s are assigned.
+Note: as in Task 5, `artwork`/`artist` are declared with `let` above the `try` block (not `const` inside it), because a `const` declared inside `try` is out of scope in the sibling `finally` block in JavaScript — referencing it there would throw `ReferenceError`, not just fail a TypeScript nullability check. The `!` in `artwork!.id` / `artist!.id` just tells TypeScript what's already true at runtime: `finally` only reaches those lines after both assignments succeeded.
 
 - [ ] **Step 2: Run the test to verify it fails**
 
