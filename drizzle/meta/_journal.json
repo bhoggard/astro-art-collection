@@ -1,0 +1,41 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1783879930034,
+      "tag": "0000_add_contacts_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783880112657,
+      "tag": "0001_add_lookup_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783880278733,
+      "tag": "0002_add_artworks_table",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1783880868511,
+      "tag": "0003_add_artwork_relation_tables",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1783881213612,
+      "tag": "0004_add_join_tables",
+      "breakpoints": true
+    }
+  ]
+}
