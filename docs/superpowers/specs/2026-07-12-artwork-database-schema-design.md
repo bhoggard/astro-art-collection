@@ -16,22 +16,25 @@ designed/planned in later phases.
 ## Scope decisions
 
 - **Store everything relevant to collection management**, not just
-  public-website fields — including purchase, donation, loan-in, valuation,
-  and provenance data. Sensitive fields are simply not queried by the public
-  site later; they aren't excluded from the database.
+  public-website fields — including purchase, valuation, and provenance
+  data. Sensitive fields are simply not queried by the public site later;
+  they aren't excluded from the database.
 - **No sale/pricing data.** The collection does not sell work, so `price`,
   `wholesale_price`, and all `sale_*` / `sold_to` fields from the CSV are
-  dropped entirely. Purchase (acquisition) and donation fields are kept —
-  those describe how a piece entered the collection, not a sale.
+  dropped entirely. Purchase (acquisition) fields are kept since that
+  describes how a piece entered the collection, not a sale.
+- **No donation tracking.** The collection doesn't receive donated art, so
+  `donation_date`, `donor_contact_id`/`Donor`, and `donation_value` are
+  dropped.
+- **No loan-in tracking.** `loan_in_start_date`, `loan_in_end_date`,
+  `loan_in_value`, and `loan_in_contact_id` are dropped.
 - **No appraiser tracking.** `is_appraiser` on contacts and
   `last_appraisal_date` / `last_appraisal_value` / `last_appraiser` on
   artworks are dropped.
 - **Provenance is a public field** (per explicit instruction), unlike most of
   the acquisition/valuation data.
 - **Location is current-state only.** No location history table — the CSV's
-  current-location fields are copied onto the artwork row directly. Loan-in
-  dates/value are kept since that's collection-relevant, distinct from
-  location history.
+  current-location fields are copied onto the artwork row directly.
 - Only Instagram is kept from the contact social-media URLs.
 - Spouse fields are dropped from contacts.
 - `Additional Files` (pipe-delimited in the CSV) becomes a proper one-to-many
@@ -41,38 +44,38 @@ designed/planned in later phases.
 
 ### `contacts`
 
-One table for every person/entity in the CSV (artists, galleries, buyers,
-donors), matching the source data's own `Artist` boolean rather than
-splitting into separate tables — this avoids duplicating a person who plays
-more than one role (e.g. an artist who is also a donor).
+One table for every person/entity in the CSV (artists, galleries, buyers),
+matching the source data's own `Artist` boolean rather than splitting into
+separate tables — this avoids duplicating a person who plays more than one
+role (e.g. an artist who also sells you work as a dealer).
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | serial PK | |
-| `source_contact_id` | int, unique | Artwork Archive `Contact Id`; used for idempotent upsert on re-import |
-| `title` | text | |
-| `first_name` | text | |
-| `last_name` | text | |
-| `email` | text | |
-| `secondary_email` | text | |
-| `job_title` | text | |
-| `company_name` | text | |
-| `work_phone` | text | |
-| `phone` | text | |
-| `mobile_phone` | text | |
-| `website` | text | |
-| `birth_date` | date, nullable | |
-| `death_date` | date, nullable | |
-| `nationality` | text | |
-| `address1` / `address2` / `city` / `state` / `zip` / `country` | text | |
-| `secondary_address1` / `secondary_address2` / `secondary_city` / `secondary_state` / `secondary_zip` / `secondary_country` | text | |
-| `is_artist` | boolean | from CSV `Artist` column |
-| `bio` | text | |
-| `notes` | text | |
-| `location` | text | |
-| `source_location_id` | int, nullable | Artwork Archive location id |
-| `instagram_url` | text | |
-| `date_added` | date | |
+| Column                                                                                                                     | Type           | Notes                                                                 |
+| -------------------------------------------------------------------------------------------------------------------------- | -------------- | --------------------------------------------------------------------- |
+| `id`                                                                                                                       | serial PK      |                                                                       |
+| `source_contact_id`                                                                                                        | int, unique    | Artwork Archive `Contact Id`; used for idempotent upsert on re-import |
+| `title`                                                                                                                    | text           |                                                                       |
+| `first_name`                                                                                                               | text           |                                                                       |
+| `last_name`                                                                                                                | text           |                                                                       |
+| `email`                                                                                                                    | text           |                                                                       |
+| `secondary_email`                                                                                                          | text           |                                                                       |
+| `job_title`                                                                                                                | text           |                                                                       |
+| `company_name`                                                                                                             | text           |                                                                       |
+| `work_phone`                                                                                                               | text           |                                                                       |
+| `phone`                                                                                                                    | text           |                                                                       |
+| `mobile_phone`                                                                                                             | text           |                                                                       |
+| `website`                                                                                                                  | text           |                                                                       |
+| `birth_date`                                                                                                               | date, nullable |                                                                       |
+| `death_date`                                                                                                               | date, nullable |                                                                       |
+| `nationality`                                                                                                              | text           |                                                                       |
+| `address1` / `address2` / `city` / `state` / `zip` / `country`                                                             | text           |                                                                       |
+| `secondary_address1` / `secondary_address2` / `secondary_city` / `secondary_state` / `secondary_zip` / `secondary_country` | text           |                                                                       |
+| `is_artist`                                                                                                                | boolean        | from CSV `Artist` column                                              |
+| `bio`                                                                                                                      | text           |                                                                       |
+| `notes`                                                                                                                    | text           |                                                                       |
+| `location`                                                                                                                 | text           |                                                                       |
+| `source_location_id`                                                                                                       | int, nullable  | Artwork Archive location id                                           |
+| `instagram_url`                                                                                                            | text           |                                                                       |
+| `date_added`                                                                                                               | date           |                                                                       |
 
 Dropped from source CSV: `Spouse First`, `Spouse Last`, `Appraiser`,
 `Facebook URL`, `Twitter URL`, `LinkedIn URL`, `Pinterest URL`,
@@ -85,90 +88,86 @@ below.
 
 One row per piece (source CSV calls these "Pieces").
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | serial PK | |
-| `source_piece_id` | int, unique | Artwork Archive `Piece Id`; idempotent upsert key |
-| `title` | text | CSV `Name` |
-| `inventory_number` | text | |
-| `type` | text | Observed values: Work on Paper, Sculpture, Photography, Print, Collage, Painting, Other, Film/Video, Textile. Kept as free text (not a Postgres enum) since Artwork Archive's picklist could add values that would otherwise break re-import. |
-| `medium` | text | |
-| `subject_matter` | text | |
-| `height` / `width` / `depth` | numeric, nullable | |
-| `dimension_override` | text | free-form dimension string when structured fields don't apply |
-| `weight` | numeric, nullable | |
-| `framed` | boolean | normalized from CSV's inconsistent `"yes"` / `"true"` / empty |
-| `framed_height` / `framed_width` / `framed_depth` | numeric, nullable | |
-| `paper_height` / `paper_width` | numeric, nullable | |
-| `creation_year` | int, nullable | |
-| `creation_date_circa` | boolean | |
-| `creation_date_override` | text | |
-| `description` | text | |
-| `notes` | text | |
-| `signed` | boolean | |
-| `signature_notes` | text | |
-| `condition` | text | |
-| `condition_notes` | text | |
-| `edition` | text | |
-| `edition_info` | text | |
-| `attribution` | text | |
-| `is_public` | boolean | from CSV `Public` column; drives what the public site displays |
-| `purchase_date` | date, nullable | |
-| `purchase_price` | numeric, nullable | |
-| `purchase_currency` | text | |
-| `source_purchase_location_id` | int, nullable | |
-| `purchase_location_name` | text | |
-| `seller_contact_id` | FK → `contacts.id`, nullable | resolved by matching source contact id; unresolvable names are logged as import warnings |
-| `purchase_url` | text | |
-| `donation_date` | date, nullable | |
-| `donor_contact_id` | FK → `contacts.id`, nullable | |
-| `donation_value` | numeric, nullable | |
-| `loan_in_start_date` / `loan_in_end_date` | date, nullable | |
-| `loan_in_value` | numeric, nullable | |
-| `loan_in_contact_id` | FK → `contacts.id`, nullable | |
-| `fair_market_value` | numeric, nullable | |
-| `insurance_value` | numeric, nullable | |
-| `provenance_notes` | text | **public field** |
-| `source` | text | |
-| `current_location_name` | text | |
-| `source_current_location_id` | int, nullable | |
-| `current_sub_location_name` | text | |
-| `current_tertiary_location_name` | text | |
-| `current_location_start_date` / `current_location_end_date` | date, nullable | |
-| `current_location_notes` | text | |
-| `current_location_latitude` / `current_location_longitude` | numeric, nullable | |
-| `last_updated` | timestamp | |
-| `last_updated_by` | text | |
-| `date_added` | date | |
+| Column                                                      | Type                         | Notes                                                                                                                                                                                                                                         |
+| ----------------------------------------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `id`                                                        | serial PK                    |                                                                                                                                                                                                                                               |
+| `source_piece_id`                                           | int, unique                  | Artwork Archive `Piece Id`; idempotent upsert key                                                                                                                                                                                             |
+| `title`                                                     | text                         | CSV `Name`                                                                                                                                                                                                                                    |
+| `inventory_number`                                          | text                         |                                                                                                                                                                                                                                               |
+| `type`                                                      | text                         | Observed values: Work on Paper, Sculpture, Photography, Print, Collage, Painting, Other, Film/Video, Textile. Kept as free text (not a Postgres enum) since Artwork Archive's picklist could add values that would otherwise break re-import. |
+| `medium`                                                    | text                         |                                                                                                                                                                                                                                               |
+| `subject_matter`                                            | text                         |                                                                                                                                                                                                                                               |
+| `height` / `width` / `depth`                                | numeric, nullable            |                                                                                                                                                                                                                                               |
+| `dimension_override`                                        | text                         | free-form dimension string when structured fields don't apply                                                                                                                                                                                 |
+| `weight`                                                    | numeric, nullable            |                                                                                                                                                                                                                                               |
+| `framed`                                                    | boolean                      | normalized from CSV's inconsistent `"yes"` / `"true"` / empty                                                                                                                                                                                 |
+| `framed_height` / `framed_width` / `framed_depth`           | numeric, nullable            |                                                                                                                                                                                                                                               |
+| `paper_height` / `paper_width`                              | numeric, nullable            |                                                                                                                                                                                                                                               |
+| `creation_year`                                             | int, nullable                |                                                                                                                                                                                                                                               |
+| `creation_date_circa`                                       | boolean                      |                                                                                                                                                                                                                                               |
+| `creation_date_override`                                    | text                         |                                                                                                                                                                                                                                               |
+| `description`                                               | text                         |                                                                                                                                                                                                                                               |
+| `notes`                                                     | text                         |                                                                                                                                                                                                                                               |
+| `signed`                                                    | boolean                      |                                                                                                                                                                                                                                               |
+| `signature_notes`                                           | text                         |                                                                                                                                                                                                                                               |
+| `condition`                                                 | text                         |                                                                                                                                                                                                                                               |
+| `condition_notes`                                           | text                         |                                                                                                                                                                                                                                               |
+| `edition`                                                   | text                         |                                                                                                                                                                                                                                               |
+| `edition_info`                                              | text                         |                                                                                                                                                                                                                                               |
+| `attribution`                                               | text                         |                                                                                                                                                                                                                                               |
+| `is_public`                                                 | boolean                      | from CSV `Public` column; drives what the public site displays                                                                                                                                                                                |
+| `purchase_date`                                             | date, nullable               |                                                                                                                                                                                                                                               |
+| `purchase_price`                                            | numeric, nullable            |                                                                                                                                                                                                                                               |
+| `purchase_currency`                                         | text                         |                                                                                                                                                                                                                                               |
+| `source_purchase_location_id`                               | int, nullable                |                                                                                                                                                                                                                                               |
+| `purchase_location_name`                                    | text                         |                                                                                                                                                                                                                                               |
+| `seller_contact_id`                                         | FK → `contacts.id`, nullable | resolved by matching source contact id; unresolvable names are logged as import warnings                                                                                                                                                      |
+| `purchase_url`                                              | text                         |                                                                                                                                                                                                                                               |
+| `fair_market_value`                                         | numeric, nullable            |                                                                                                                                                                                                                                               |
+| `insurance_value`                                           | numeric, nullable            |                                                                                                                                                                                                                                               |
+| `provenance_notes`                                          | text                         | **public field**                                                                                                                                                                                                                              |
+| `source`                                                    | text                         |                                                                                                                                                                                                                                               |
+| `current_location_name`                                     | text                         |                                                                                                                                                                                                                                               |
+| `source_current_location_id`                                | int, nullable                |                                                                                                                                                                                                                                               |
+| `current_sub_location_name`                                 | text                         |                                                                                                                                                                                                                                               |
+| `current_tertiary_location_name`                            | text                         |                                                                                                                                                                                                                                               |
+| `current_location_start_date` / `current_location_end_date` | date, nullable               |                                                                                                                                                                                                                                               |
+| `current_location_notes`                                    | text                         |                                                                                                                                                                                                                                               |
+| `current_location_latitude` / `current_location_longitude`  | numeric, nullable            |                                                                                                                                                                                                                                               |
+| `last_updated`                                              | timestamp                    |                                                                                                                                                                                                                                               |
+| `last_updated_by`                                           | text                         |                                                                                                                                                                                                                                               |
+| `date_added`                                                | date                         |                                                                                                                                                                                                                                               |
 
 Dropped from source CSV: `Price`, `Wholesale Price`, `Sale Id`, `Sale Type`,
 `Sale Date`, `Sale Price`, `Sale Net`, `Sale Location`, `Sold To`,
-`Last Appraisal Date`, `Last Appraisal Value`, `Last Appraiser`.
+`Last Appraisal Date`, `Last Appraisal Value`, `Last Appraiser`,
+`Donation Date`, `Donor`, `Donation Value`, `Loan In Start Date`,
+`Loan In End Date`, `Loan In Value`, `Loan In Contact`.
 
 ### `artwork_files`
 
 Replaces the CSV's pipe-delimited `Additional Files (name | notes | url)`
 column with a proper one-to-many table.
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | serial PK | |
-| `artwork_id` | FK → `artworks.id` | |
-| `name` | text | |
-| `notes` | text | |
-| `url` | text | |
-| `sort_order` | int | |
+| Column       | Type               | Notes                                                                    |
+| ------------ | ------------------ | ------------------------------------------------------------------------- |
+| `id`         | serial PK          |                                                                           |
+| `artwork_id` | FK → `artworks.id` |                                                                           |
+| `name`       | text               |                                                                           |
+| `notes`      | text               |                                                                           |
+| `r2_key`     | text               | destination key once the file is uploaded to R2 (upload is a later phase) |
+| `sort_order` | int                |                                                                           |
 
 ### `artwork_images`
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | serial PK | |
-| `artwork_id` | FK → `artworks.id` | |
-| `r2_key` | text | destination key once the image is uploaded to R2 (upload itself is a later phase) |
-| `caption` | text | |
-| `sort_order` | int | |
-| `is_primary` | boolean | |
+| Column       | Type               | Notes                                                                             |
+| ------------ | ------------------ | --------------------------------------------------------------------------------- |
+| `id`         | serial PK          |                                                                                   |
+| `artwork_id` | FK → `artworks.id` |                                                                                   |
+| `r2_key`     | text               | destination key once the image is uploaded to R2 (upload itself is a later phase) |
+| `caption`    | text               |                                                                                   |
+| `sort_order` | int                |                                                                                   |
+| `is_primary` | boolean            |                                                                                   |
 
 Populated from `Primary Image Url` plus the 30 `Additional Image N URL` /
 `Additional Image N Caption` column pairs.
@@ -178,12 +177,12 @@ Populated from `Primary Image Url` plus the 30 `Additional Image N URL` /
 Many-to-many join, since pieces can have collaborating artists
 (`Additional Artist(s)` / `Artist Id(s)` in the CSV).
 
-| Column | Type | Notes |
-|---|---|---|
-| `artwork_id` | FK → `artworks.id` | |
-| `contact_id` | FK → `contacts.id` | |
-| `role` | enum: `primary`, `additional` | |
-| `sort_order` | int | |
+| Column       | Type                          | Notes |
+| ------------ | ----------------------------- | ----- |
+| `artwork_id` | FK → `artworks.id`            |       |
+| `contact_id` | FK → `contacts.id`            |       |
+| `role`       | enum: `primary`, `additional` |       |
+| `sort_order` | int                           |       |
 
 Primary key: (`artwork_id`, `contact_id`).
 
@@ -214,7 +213,7 @@ Primary key: (`artwork_id`, `contact_id`).
 - **Import order** (FK dependencies):
   1. `contacts`
   2. `collections`, `tags`, `groups`
-  3. `artworks` (needs contacts for seller/donor/loan-in FKs)
+  3. `artworks` (needs contacts for the seller FK)
   4. `artwork_artists`, `artwork_images`, `artwork_files`,
      `artwork_collections`, `artwork_tags`, `contact_tags`, `contact_groups`
 - **Error handling:** row-level failures (missing required field,
