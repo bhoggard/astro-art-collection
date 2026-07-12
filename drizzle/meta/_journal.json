@@ -15,6 +15,13 @@
       "when": 1783880112657,
       "tag": "0001_misty_black_knight",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783880278733,
+      "tag": "0002_workable_pepper_potts",
+      "breakpoints": true
     }
   ]
 }
