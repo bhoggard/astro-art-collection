@@ -10,5 +10,6 @@ export const artworkFiles = pgTable('artwork_files', {
   name: text('name'),
   notes: text('notes'),
   r2Key: text('r2_key'),
+  sourceUrl: text('source_url'),
   sortOrder: integer('sort_order'),
 });

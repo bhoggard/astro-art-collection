@@ -1712,6 +1712,12 @@ describe('importArtworks', () => {
     const primarySourceId = Math.floor(Math.random() * 1_000_000_000);
     const additionalSourceId = Math.floor(Math.random() * 1_000_000_000);
     const sellerSourceId = Math.floor(Math.random() * 1_000_000_000);
+    // Randomized rather than a fixed literal: tags/collections are globally
+    // unique-by-name across the whole test database, and Vitest runs test
+    // files in parallel — a fixed name here would race with the same fixed
+    // name used by a different test file's cleanup.
+    const collectionName = `Test Collection ${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
+    const tagName = `Test Tag ${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
 
     const [primary] = await testDb
       .insert(contacts)
@@ -1738,8 +1744,8 @@ describe('importArtworks', () => {
       artistSourceIds: [primarySourceId, additionalSourceId],
       images: [{ url: 'https://example.com/image.jpg', caption: null, sortOrder: 0, isPrimary: true }],
       files: [{ name: 'Receipt', notes: null, url: 'https://example.com/receipt.pdf', sortOrder: 0 }],
-      collections: ['Test Collection'],
-      tags: ['Test Tag'],
+      collections: [collectionName],
+      tags: [tagName],
     });
 
     try {
@@ -1775,8 +1781,8 @@ describe('importArtworks', () => {
       await testDb.delete(contacts).where(eq(contacts.sourceContactId, primarySourceId));
       await testDb.delete(contacts).where(eq(contacts.sourceContactId, additionalSourceId));
       await testDb.delete(contacts).where(eq(contacts.sourceContactId, sellerSourceId));
-      await testDb.delete(collections).where(eq(collections.name, 'Test Collection'));
-      await testDb.delete(tags).where(eq(tags.name, 'Test Tag'));
+      await testDb.delete(collections).where(eq(collections.name, collectionName));
+      await testDb.delete(tags).where(eq(tags.name, tagName));
     }
   });
 
@@ -2572,6 +2578,12 @@ describe('runImport (end-to-end fixture)', () => {
     const yearMonthPieceId = Math.floor(Math.random() * 1_000_000_000);
     const sellerPieceId = Math.floor(Math.random() * 1_000_000_000);
     const unresolvedArtistPieceId = Math.floor(Math.random() * 1_000_000_000);
+    // Randomized rather than fixed literals: tags/collections are globally
+    // unique-by-name across the whole test database, and Vitest runs test
+    // files in parallel — fixed names here would race with the same fixed
+    // names used by Task 4/5's test files.
+    const collectionName = `Test Collection ${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
+    const tagName = `Test Tag ${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
 
     const dir = mkdtempSync(join(tmpdir(), 'import-e2e-'));
     const contactsPath = join(dir, 'contacts.csv');
@@ -2616,8 +2628,8 @@ describe('runImport (end-to-end fixture)', () => {
           primaryImageUrl: 'https://example.com/primary.jpg',
           additionalImages: [{ url: 'https://example.com/additional-1.jpg', caption: 'side view' }],
           editionInfo: 'unnumbered of 25\nartist proof',
-          collections: 'Test Collection',
-          tags: 'Test Tag',
+          collections: collectionName,
+          tags: tagName,
         }),
         piecesRow({
           sourcePieceId: multiFilePieceId,
@@ -2785,8 +2797,8 @@ describe('runImport (end-to-end fixture)', () => {
       await testDb.delete(contacts).where(eq(contacts.sourceContactId, gallerySourceId));
       await testDb.delete(contacts).where(eq(contacts.sourceContactId, sellerSourceId));
       await testDb.delete(contacts).where(eq(contacts.sourceContactId, blankSourceId));
-      await testDb.delete(collections).where(eq(collections.name, 'Test Collection'));
-      await testDb.delete(tags).where(eq(tags.name, 'Test Tag'));
+      await testDb.delete(collections).where(eq(collections.name, collectionName));
+      await testDb.delete(tags).where(eq(tags.name, tagName));
     }
   });
 });
