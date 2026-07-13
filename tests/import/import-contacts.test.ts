@@ -92,7 +92,8 @@ describe('importContacts', () => {
   });
 
   it('is idempotent: importing the same record twice does not duplicate rows', async () => {
-    const record = baseContactRecord({ firstName: 'Grace', lastName: 'Hopper', tags: ['Idempotent Tag'] });
+    const tagName = `Idempotent Tag ${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
+    const record = baseContactRecord({ firstName: 'Grace', lastName: 'Hopper', tags: [tagName] });
 
     try {
       await importContacts(testDb, [record]);
@@ -116,7 +117,7 @@ describe('importContacts', () => {
         await testDb.delete(contactTags).where(eq(contactTags.contactId, row.id));
       }
       await testDb.delete(contacts).where(eq(contacts.sourceContactId, record.sourceContactId));
-      await testDb.delete(tags).where(eq(tags.name, 'Idempotent Tag'));
+      await testDb.delete(tags).where(eq(tags.name, tagName));
     }
   });
 });

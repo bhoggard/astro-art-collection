@@ -120,6 +120,14 @@ describe('parsePiecesRows', () => {
     expect(records[0].artistSourceIds).toEqual([100, 200]);
   });
 
+  it('does not warn about additional artist names when a piece has no artist ids and no additional names', () => {
+    const row = piecesRow({ 0: '1' });
+
+    const { warnings } = parsePiecesRows([HEADER, row]);
+
+    expect(warnings).toEqual([]);
+  });
+
   it('skips a row with a missing Piece Id', () => {
     const row = piecesRow({ 5: '1' });
     row[0] = '';

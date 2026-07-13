@@ -182,7 +182,7 @@ export function parsePiecesRows(rows: string[][]): ParsePiecesResult {
       .map((value) => Number(value))
       .filter((value) => Number.isFinite(value));
     const additionalArtistNames = parseDelimited(row[4]);
-    if (additionalArtistNames.length > artistIds.length - 1) {
+    if (additionalArtistNames.length > Math.max(artistIds.length - 1, 0)) {
       warnings.push({
         row: rowNumber,
         reason: `${additionalArtistNames.length} additional artist name(s) but only ${Math.max(artistIds.length - 1, 0)} additional id(s)`,
