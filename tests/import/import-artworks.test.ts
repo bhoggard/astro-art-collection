@@ -203,9 +203,14 @@ describe('importArtworks', () => {
   });
 
   it('is idempotent: importing the same record twice does not duplicate rows', async () => {
+    // Randomized rather than a fixed literal: tags are globally unique-by-name
+    // across the whole test database, and Vitest runs test files in parallel —
+    // a fixed name here would race with the same fixed name used by a
+    // different test file's cleanup.
+    const tagName = `Test Tag ${Date.now()}-${Math.floor(Math.random() * 1_000_000_000)}`;
     const record = baseArtworkRecord({
       title: 'Idempotent Piece',
-      tags: ['Idempotent Artwork Tag'],
+      tags: [tagName],
       images: [{ url: 'https://example.com/idempotent.jpg', caption: null, sortOrder: 0, isPrimary: true }],
     });
 
@@ -228,7 +233,7 @@ describe('importArtworks', () => {
         await testDb.delete(artworkTags).where(eq(artworkTags.artworkId, artwork.id));
       }
       await testDb.delete(artworks).where(eq(artworks.sourcePieceId, record.sourcePieceId));
-      await testDb.delete(tags).where(eq(tags.name, 'Idempotent Artwork Tag'));
+      await testDb.delete(tags).where(eq(tags.name, tagName));
     }
   });
 });
