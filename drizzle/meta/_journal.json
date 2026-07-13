@@ -36,6 +36,13 @@
       "when": 1783881213612,
       "tag": "0004_add_join_tables",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1783904915815,
+      "tag": "0005_add_artwork_source_url_columns",
+      "breakpoints": true
     }
   ]
 }
