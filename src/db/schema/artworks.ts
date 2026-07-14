@@ -8,8 +8,8 @@ import {
   serial,
   text,
   timestamp,
-} from 'drizzle-orm/pg-core';
-import { contacts } from './contacts';
+} from 'drizzle-orm/pg-core'
+import { contacts } from './contacts'
 
 export const artworks = pgTable('artworks', {
   id: serial('id').primaryKey(),
@@ -66,4 +66,4 @@ export const artworks = pgTable('artworks', {
   lastUpdated: timestamp('last_updated'),
   lastUpdatedBy: text('last_updated_by'),
   dateAdded: date('date_added'),
-});
+})

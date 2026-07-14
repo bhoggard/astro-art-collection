@@ -1,18 +1,18 @@
 // scripts/import/summary.ts
-import type { TableImportResult } from './import-contacts';
+import type { TableImportResult } from './import-contacts'
 
 export interface ImportSummary {
-  contacts: TableImportResult;
-  contactGroups: TableImportResult;
-  contactTags: TableImportResult;
-  artworks: TableImportResult;
-  artworkArtists: TableImportResult;
-  artworkImages: TableImportResult;
-  artworkFiles: TableImportResult;
-  artworkCollections: TableImportResult;
-  artworkTags: TableImportResult;
-  warningMessages: string[];
-  skippedMessages: string[];
+  contacts: TableImportResult
+  contactGroups: TableImportResult
+  contactTags: TableImportResult
+  artworks: TableImportResult
+  artworkArtists: TableImportResult
+  artworkImages: TableImportResult
+  artworkFiles: TableImportResult
+  artworkCollections: TableImportResult
+  artworkTags: TableImportResult
+  warningMessages: string[]
+  skippedMessages: string[]
 }
 
 export function printSummary(summary: ImportSummary): void {
@@ -26,19 +26,19 @@ export function printSummary(summary: ImportSummary): void {
     artworkFiles: summary.artworkFiles,
     artworkCollections: summary.artworkCollections,
     artworkTags: summary.artworkTags,
-  });
+  })
 
   if (summary.warningMessages.length > 0) {
-    console.log(`\n${summary.warningMessages.length} warning(s):`);
+    console.log(`\n${summary.warningMessages.length} warning(s):`)
     for (const message of summary.warningMessages) {
-      console.log(`  [WARN] ${message}`);
+      console.log(`  [WARN] ${message}`)
     }
   }
 
   if (summary.skippedMessages.length > 0) {
-    console.log(`\n${summary.skippedMessages.length} skipped row(s):`);
+    console.log(`\n${summary.skippedMessages.length} skipped row(s):`)
     for (const message of summary.skippedMessages) {
-      console.log(`  [SKIP] ${message}`);
+      console.log(`  [SKIP] ${message}`)
     }
   }
 }

@@ -1,5 +1,12 @@
 // src/db/schema/contacts.ts
-import { boolean, date, integer, pgTable, serial, text } from 'drizzle-orm/pg-core';
+import {
+  boolean,
+  date,
+  integer,
+  pgTable,
+  serial,
+  text,
+} from 'drizzle-orm/pg-core'
 
 export const contacts = pgTable('contacts', {
   id: serial('id').primaryKey(),
@@ -37,4 +44,4 @@ export const contacts = pgTable('contacts', {
   sourceLocationId: integer('source_location_id'),
   instagramUrl: text('instagram_url'),
   dateAdded: date('date_added'),
-});
+})

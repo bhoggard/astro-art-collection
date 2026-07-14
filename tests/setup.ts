@@ -1,2 +1,2 @@
 // tests/setup.ts
-import 'dotenv/config';
+import 'dotenv/config'

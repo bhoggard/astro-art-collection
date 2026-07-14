@@ -1,27 +1,64 @@
 // tests/import/parse-contacts.test.ts
-import { describe, expect, it } from 'vitest';
-import { parseContactsRows } from '../../scripts/import/parse-contacts';
+import { describe, expect, it } from 'vitest'
+import { parseContactsRows } from '../../scripts/import/parse-contacts'
 
 const HEADER = [
-  'Contact Id', 'Title', 'First Name', 'Last Name', 'Email', 'Secondary Email', 'Job Title',
-  'Company Name', 'Work Phone', 'Phone', 'Mobile Phone', 'Website', 'Spouse First', 'Spouse Last',
-  'Birth Date', 'Death Date', 'Nationality', 'Address1', 'Address2', 'City', 'State', 'Zip',
-  'Country', 'Secondary Address1', 'Secondary Address2', 'Secondary City', 'Secondary State',
-  'Secondary Zip', 'Secondary Country', 'Appraiser', 'Artist', 'Artist Piece Count', 'Groups',
-  'Tags', 'Bio', 'Notes', 'Location', 'Location Id', 'Facebook URL', 'Instagram URL',
-  'Twitter URL', 'LinkedIn URL', 'Pinterest URL', 'Date Added',
-];
+  'Contact Id',
+  'Title',
+  'First Name',
+  'Last Name',
+  'Email',
+  'Secondary Email',
+  'Job Title',
+  'Company Name',
+  'Work Phone',
+  'Phone',
+  'Mobile Phone',
+  'Website',
+  'Spouse First',
+  'Spouse Last',
+  'Birth Date',
+  'Death Date',
+  'Nationality',
+  'Address1',
+  'Address2',
+  'City',
+  'State',
+  'Zip',
+  'Country',
+  'Secondary Address1',
+  'Secondary Address2',
+  'Secondary City',
+  'Secondary State',
+  'Secondary Zip',
+  'Secondary Country',
+  'Appraiser',
+  'Artist',
+  'Artist Piece Count',
+  'Groups',
+  'Tags',
+  'Bio',
+  'Notes',
+  'Location',
+  'Location Id',
+  'Facebook URL',
+  'Instagram URL',
+  'Twitter URL',
+  'LinkedIn URL',
+  'Pinterest URL',
+  'Date Added',
+]
 
 function contactsRow(overrides: Record<number, string>): string[] {
-  const row = new Array(44).fill('');
+  const row = new Array(44).fill('')
   for (const [index, value] of Object.entries(overrides)) {
-    row[Number(index)] = value;
+    row[Number(index)] = value
   }
   // Every real data row has a 45th field (the phantom column at index 43 is
   // always blank; the real date-added value is the actual last field).
-  row.push(row[43]);
-  row[43] = '';
-  return row;
+  row.push(row[43])
+  row[43] = ''
+  return row
 }
 
 describe('parseContactsRows', () => {
@@ -36,12 +73,12 @@ describe('parseContactsRows', () => {
       32: 'Female Artists',
       39: 'https://www.instagram.com/boogiebrowntown',
       43: '2025-04-27',
-    });
+    })
 
-    const { records, warnings, skipped } = parseContactsRows([HEADER, row]);
+    const { records, warnings, skipped } = parseContactsRows([HEADER, row])
 
-    expect(skipped).toEqual([]);
-    expect(records).toHaveLength(1);
+    expect(skipped).toEqual([])
+    expect(records).toHaveLength(1)
     expect(records[0]).toMatchObject({
       sourceContactId: 1053986,
       firstName: 'Melissa',
@@ -52,9 +89,11 @@ describe('parseContactsRows', () => {
       groups: ['Female Artists'],
       instagramUrl: 'https://www.instagram.com/boogiebrowntown',
       dateAdded: '2025-04-27',
-    });
-    expect(warnings).toEqual([{ row: 2, reason: 'bare year "1974" approximated to January 1' }]);
-  });
+    })
+    expect(warnings).toEqual([
+      { row: 2, reason: 'bare year "1974" approximated to January 1' },
+    ])
+  })
 
   it('maps a non-artist company contact with no birth date', () => {
     const row = contactsRow({
@@ -62,9 +101,9 @@ describe('parseContactsRows', () => {
       2: 'Zero Art Fair',
       30: 'false',
       43: '2025-07-27',
-    });
+    })
 
-    const { records, warnings } = parseContactsRows([HEADER, row]);
+    const { records, warnings } = parseContactsRows([HEADER, row])
 
     expect(records[0]).toMatchObject({
       sourceContactId: 1104177,
@@ -73,17 +112,19 @@ describe('parseContactsRows', () => {
       birthDate: null,
       groups: [],
       tags: [],
-    });
-    expect(warnings).toEqual([]);
-  });
+    })
+    expect(warnings).toEqual([])
+  })
 
   it('skips a row with a missing Contact Id', () => {
-    const row = contactsRow({ 2: 'No Id Here' });
-    row[0] = '';
+    const row = contactsRow({ 2: 'No Id Here' })
+    row[0] = ''
 
-    const { records, skipped } = parseContactsRows([HEADER, row]);
+    const { records, skipped } = parseContactsRows([HEADER, row])
 
-    expect(records).toEqual([]);
-    expect(skipped).toEqual([{ row: 2, reason: 'missing/invalid Contact Id ""' }]);
-  });
-});
+    expect(records).toEqual([])
+    expect(skipped).toEqual([
+      { row: 2, reason: 'missing/invalid Contact Id ""' },
+    ])
+  })
+})

@@ -1,8 +1,8 @@
 // src/db/schema/joins.ts
-import { integer, pgTable, primaryKey } from 'drizzle-orm/pg-core';
-import { artworks } from './artworks';
-import { contacts } from './contacts';
-import { collections, groups, tags } from './lookups';
+import { integer, pgTable, primaryKey } from 'drizzle-orm/pg-core'
+import { artworks } from './artworks'
+import { contacts } from './contacts'
+import { collections, groups, tags } from './lookups'
 
 export const artworkCollections = pgTable(
   'artwork_collections',
@@ -17,7 +17,7 @@ export const artworkCollections = pgTable(
   (table) => ({
     pk: primaryKey({ columns: [table.artworkId, table.collectionId] }),
   }),
-);
+)
 
 export const artworkTags = pgTable(
   'artwork_tags',
@@ -32,7 +32,7 @@ export const artworkTags = pgTable(
   (table) => ({
     pk: primaryKey({ columns: [table.artworkId, table.tagId] }),
   }),
-);
+)
 
 export const contactTags = pgTable(
   'contact_tags',
@@ -47,7 +47,7 @@ export const contactTags = pgTable(
   (table) => ({
     pk: primaryKey({ columns: [table.contactId, table.tagId] }),
   }),
-);
+)
 
 export const contactGroups = pgTable(
   'contact_groups',
@@ -62,4 +62,4 @@ export const contactGroups = pgTable(
   (table) => ({
     pk: primaryKey({ columns: [table.contactId, table.groupId] }),
   }),
-);
+)

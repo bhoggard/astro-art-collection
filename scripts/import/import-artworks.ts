@@ -1,6 +1,6 @@
 // scripts/import/import-artworks.ts
-import { eq } from 'drizzle-orm';
-import type { Db } from '../../src/db/client';
+import { eq } from 'drizzle-orm'
+import type { Db } from '../../src/db/client'
 import {
   artworkArtists,
   artworkCollections,
@@ -8,23 +8,23 @@ import {
   artworkImages,
   artworkTags,
   artworks,
-} from '../../src/db/schema';
-import type { TableImportResult } from './import-contacts';
-import { getOrCreateCollection, getOrCreateTag } from './lookups';
-import type { ArtworkRecord } from './parse-pieces';
+} from '../../src/db/schema'
+import type { TableImportResult } from './import-contacts'
+import { getOrCreateCollection, getOrCreateTag } from './lookups'
+import type { ArtworkRecord } from './parse-pieces'
 
 export interface ImportArtworksResult {
-  artworks: TableImportResult;
-  artworkArtists: TableImportResult;
-  artworkImages: TableImportResult;
-  artworkFiles: TableImportResult;
-  artworkCollections: TableImportResult;
-  artworkTags: TableImportResult;
-  warningMessages: string[];
+  artworks: TableImportResult
+  artworkArtists: TableImportResult
+  artworkImages: TableImportResult
+  artworkFiles: TableImportResult
+  artworkCollections: TableImportResult
+  artworkTags: TableImportResult
+  warningMessages: string[]
 }
 
 function emptyResult(): TableImportResult {
-  return { processed: 0, skipped: 0, warnings: 0 };
+  return { processed: 0, skipped: 0, warnings: 0 }
 }
 
 export async function importArtworks(
@@ -32,21 +32,23 @@ export async function importArtworks(
   records: ArtworkRecord[],
   contactIdMap: Map<number, number>,
 ): Promise<ImportArtworksResult> {
-  const artworksResult = emptyResult();
-  const artworkArtistsResult = emptyResult();
-  const artworkImagesResult = emptyResult();
-  const artworkFilesResult = emptyResult();
-  const artworkCollectionsResult = emptyResult();
-  const artworkTagsResult = emptyResult();
-  const warningMessages: string[] = [];
+  const artworksResult = emptyResult()
+  const artworkArtistsResult = emptyResult()
+  const artworkImagesResult = emptyResult()
+  const artworkFilesResult = emptyResult()
+  const artworkCollectionsResult = emptyResult()
+  const artworkTagsResult = emptyResult()
+  const warningMessages: string[] = []
 
   for (const record of records) {
-    let sellerContactId: number | null = null;
+    let sellerContactId: number | null = null
     if (record.sellerSourceContactId !== null) {
-      sellerContactId = contactIdMap.get(record.sellerSourceContactId) ?? null;
+      sellerContactId = contactIdMap.get(record.sellerSourceContactId) ?? null
       if (sellerContactId === null) {
-        warningMessages.push(`row ${record.rowNumber}: seller contact id ${record.sellerSourceContactId} not found`);
-        artworksResult.warnings++;
+        warningMessages.push(
+          `row ${record.rowNumber}: seller contact id ${record.sellerSourceContactId} not found`,
+        )
+        artworksResult.warnings++
       }
     }
 
@@ -104,27 +106,35 @@ export async function importArtworks(
       lastUpdated: record.lastUpdated,
       lastUpdatedBy: record.lastUpdatedBy,
       dateAdded: record.dateAdded,
-    };
+    }
 
     const [row] = await db
       .insert(artworks)
       .values(values)
       .onConflictDoUpdate({ target: artworks.sourcePieceId, set: values })
-      .returning({ id: artworks.id });
+      .returning({ id: artworks.id })
 
-    artworksResult.processed++;
+    artworksResult.processed++
 
-    const resolvedArtists: { contactId: number; role: 'primary' | 'additional' }[] = [];
+    const resolvedArtists: {
+      contactId: number
+      role: 'primary' | 'additional'
+    }[] = []
     record.artistSourceIds.forEach((sourceId, index) => {
-      const contactId = contactIdMap.get(sourceId);
+      const contactId = contactIdMap.get(sourceId)
       if (contactId === undefined) {
-        warningMessages.push(`row ${record.rowNumber}: artist id ${sourceId} not found in contacts`);
-        artworkArtistsResult.warnings++;
-        return;
+        warningMessages.push(
+          `row ${record.rowNumber}: artist id ${sourceId} not found in contacts`,
+        )
+        artworkArtistsResult.warnings++
+        return
       }
-      resolvedArtists.push({ contactId, role: index === 0 ? 'primary' : 'additional' });
-    });
-    await db.delete(artworkArtists).where(eq(artworkArtists.artworkId, row.id));
+      resolvedArtists.push({
+        contactId,
+        role: index === 0 ? 'primary' : 'additional',
+      })
+    })
+    await db.delete(artworkArtists).where(eq(artworkArtists.artworkId, row.id))
     if (resolvedArtists.length > 0) {
       await db.insert(artworkArtists).values(
         resolvedArtists.map((entry, sortOrder) => ({
@@ -133,11 +143,11 @@ export async function importArtworks(
           role: entry.role,
           sortOrder,
         })),
-      );
+      )
     }
-    artworkArtistsResult.processed += resolvedArtists.length;
+    artworkArtistsResult.processed += resolvedArtists.length
 
-    await db.delete(artworkImages).where(eq(artworkImages.artworkId, row.id));
+    await db.delete(artworkImages).where(eq(artworkImages.artworkId, row.id))
     if (record.images.length > 0) {
       await db.insert(artworkImages).values(
         record.images.map((image) => ({
@@ -148,11 +158,11 @@ export async function importArtworks(
           sortOrder: image.sortOrder,
           isPrimary: image.isPrimary,
         })),
-      );
+      )
     }
-    artworkImagesResult.processed += record.images.length;
+    artworkImagesResult.processed += record.images.length
 
-    await db.delete(artworkFiles).where(eq(artworkFiles.artworkId, row.id));
+    await db.delete(artworkFiles).where(eq(artworkFiles.artworkId, row.id))
     if (record.files.length > 0) {
       await db.insert(artworkFiles).values(
         record.files.map((file) => ({
@@ -163,29 +173,38 @@ export async function importArtworks(
           r2Key: null,
           sortOrder: file.sortOrder,
         })),
-      );
+      )
     }
-    artworkFilesResult.processed += record.files.length;
+    artworkFilesResult.processed += record.files.length
 
     const collectionIds = (
-      await Promise.all(record.collections.map((name) => getOrCreateCollection(db, name)))
-    ).filter((id): id is number => id !== null);
-    await db.delete(artworkCollections).where(eq(artworkCollections.artworkId, row.id));
+      await Promise.all(
+        record.collections.map((name) => getOrCreateCollection(db, name)),
+      )
+    ).filter((id): id is number => id !== null)
+    await db
+      .delete(artworkCollections)
+      .where(eq(artworkCollections.artworkId, row.id))
     if (collectionIds.length > 0) {
-      await db
-        .insert(artworkCollections)
-        .values(collectionIds.map((collectionId) => ({ artworkId: row.id, collectionId })));
+      await db.insert(artworkCollections).values(
+        collectionIds.map((collectionId) => ({
+          artworkId: row.id,
+          collectionId,
+        })),
+      )
     }
-    artworkCollectionsResult.processed += collectionIds.length;
+    artworkCollectionsResult.processed += collectionIds.length
 
-    const tagIds = (await Promise.all(record.tags.map((name) => getOrCreateTag(db, name)))).filter(
-      (id): id is number => id !== null,
-    );
-    await db.delete(artworkTags).where(eq(artworkTags.artworkId, row.id));
+    const tagIds = (
+      await Promise.all(record.tags.map((name) => getOrCreateTag(db, name)))
+    ).filter((id): id is number => id !== null)
+    await db.delete(artworkTags).where(eq(artworkTags.artworkId, row.id))
     if (tagIds.length > 0) {
-      await db.insert(artworkTags).values(tagIds.map((tagId) => ({ artworkId: row.id, tagId })));
+      await db
+        .insert(artworkTags)
+        .values(tagIds.map((tagId) => ({ artworkId: row.id, tagId })))
     }
-    artworkTagsResult.processed += tagIds.length;
+    artworkTagsResult.processed += tagIds.length
   }
 
   return {
@@ -196,5 +215,5 @@ export async function importArtworks(
     artworkCollections: artworkCollectionsResult,
     artworkTags: artworkTagsResult,
     warningMessages,
-  };
+  }
 }

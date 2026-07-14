@@ -11,6 +11,8 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest run",
+    "format": "biome format --write .",
+    "format:check": "biome format .",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "import:csv": "tsx scripts/import-csv.ts"
@@ -22,6 +24,7 @@
     "drizzle-orm": "^0.45.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.5.3",
     "dotenv": "^17.4.2",
     "drizzle-kit": "^0.31.10",
     "tsx": "^4.23.0",

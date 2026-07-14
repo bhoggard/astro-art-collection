@@ -1,6 +1,6 @@
 // src/db/schema/artwork-files.ts
-import { integer, pgTable, serial, text } from 'drizzle-orm/pg-core';
-import { artworks } from './artworks';
+import { integer, pgTable, serial, text } from 'drizzle-orm/pg-core'
+import { artworks } from './artworks'
 
 export const artworkFiles = pgTable('artwork_files', {
   id: serial('id').primaryKey(),
@@ -12,4 +12,4 @@ export const artworkFiles = pgTable('artwork_files', {
   r2Key: text('r2_key'),
   sourceUrl: text('source_url'),
   sortOrder: integer('sort_order'),
-});
+})
